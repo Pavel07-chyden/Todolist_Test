@@ -1,6 +1,7 @@
 {
   "name": "untitled3",
   "version": "0.1.0",
+  "homepage": "https://Pavel07-chyden.github.io/Todolist_Test",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.12.4",
