@@ -1,26 +1,117 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useCallback} from 'react'
 import './App.css';
+import {TaskType, Todolist} from './Todolist';
+import {AddItemForm} from './AddItemForm';
+import {AppBar, Container, Grid,  Paper, Toolbar, Typography} from '@material-ui/core';
+import {
+  addTodolistAC,
+  changeTodolistFilterAC,
+  changeTodolistTitleAC,
+  removeTodolistAC,
+} from './state/todolists-reducer';
+import {addTaskAC, changeTaskStatusAC, changeTaskTitleAC, removeTaskAC} from './state/tasks-reducer';
+import {useDispatch, useSelector} from 'react-redux';
+import {AppRootStateType} from './state/store';
 
-function App() {
+export type FilterValuesType = "all" | "active" | "completed";
+export type TodolistType = {
+  id: string
+  title: string
+  filter: FilterValuesType
+}
+
+export type TasksStateType = {
+  [key: string]: Array<TaskType>
+}
+
+function AppWithRedux() {
+
+  const todolists = useSelector<AppRootStateType, Array<TodolistType>>(state => state.todolists)
+  const tasks = useSelector<AppRootStateType, TasksStateType>(state => state.tasks)
+  const dispatch = useDispatch();
+
+  const removeTask = useCallback(function (id: string, todolistId: string) {
+    const action = removeTaskAC(id, todolistId);
+    dispatch(action);
+  }, [dispatch]);
+
+  const addTask = useCallback(function (title: string, todolistId: string) {
+    const action = addTaskAC(title, todolistId);
+    dispatch(action);
+  }, [dispatch]);
+
+  const changeStatus = useCallback(function (id: string, isDone: boolean, todolistId: string) {
+    const action = changeTaskStatusAC(id, isDone, todolistId);
+    dispatch(action);
+  }, [dispatch]);
+
+  const changeTaskTitle = useCallback(function (id: string, newTitle: string, todolistId: string) {
+    const action = changeTaskTitleAC(id, newTitle, todolistId);
+    dispatch(action);
+  }, [dispatch]);
+
+  const changeFilter = useCallback(function (value: FilterValuesType, todolistId: string) {
+    const action = changeTodolistFilterAC(todolistId, value);
+    dispatch(action);
+  }, [dispatch]);
+
+  const removeTodolist = useCallback(function (id: string) {
+    const action = removeTodolistAC(id);
+    dispatch(action);
+  }, [dispatch]);
+
+  const changeTodolistTitle = useCallback( (id: string, title: string) => {
+    const action = changeTodolistTitleAC(id, title);
+    dispatch(action);
+  }, [dispatch])
+
+  const addTodolist = useCallback( (title: string) => {
+    const action = addTodolistAC(title);
+    dispatch(action);
+  }, [dispatch]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <div>
+        <AppBar position="static" style ={{background:"#764abc"}} >
+          <Toolbar >
+            <Typography variant="h6">
+               Todo List
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <Container fixed>
+          <Grid container style={{padding: "20px"}}>
+            <AddItemForm  addItem={addTodolist}/>
+          </Grid>
+          <Grid container spacing={3}>
+            {
+              todolists.map(tl => {
+                let allTodolistTasks = tasks[tl.id];
+                let tasksForTodolist = allTodolistTasks;
+
+                return <Grid item key={tl.id}>
+                  <Paper style={{padding: "10px"}}>
+                    <Todolist
+                        id={tl.id}
+                        title={tl.title}
+                        tasks={tasksForTodolist}
+                        removeTask={removeTask}
+                        changeFilter={changeFilter}
+                        addTask={addTask}
+                        changeTaskStatus={changeStatus}
+                        filter={tl.filter}
+                        removeTodolist={removeTodolist}
+                        changeTaskTitle={changeTaskTitle}
+                        changeTodolistTitle={changeTodolistTitle}
+                    />
+                  </Paper>
+                </Grid>
+              })
+            }
+          </Grid>
+        </Container>
+      </div>
   );
 }
 
-export default App;
+export default AppWithRedux;
