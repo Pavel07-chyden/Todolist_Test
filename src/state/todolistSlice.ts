@@ -1,29 +1,34 @@
-import {RootState} from "./store";
-import {v1} from "uuid";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {TasksStateType} from "../App";
+import {FilterValuesType, TodolistType} from "App";
 
-export const initialState:TasksStateType=[] as never
+export const initialState:TodolistType[] = []
 
-
-
-const tasksSlice = createSlice({
-    name: 'tasks',
+const todolistSlice = createSlice({
+    name: 'todolists',
     initialState,
     reducers: {
-        addTask(state, action:PayloadAction<{title:string, todolistId:string}>) {
-            const newTask = {id: v1(), title: action.payload.title, isDone: false}
-            const newTasks= [newTask, ...state[action.payload.todolistId]];
-            state[action.payload.todolistId] = newTasks
-        }}
+            addTodolistItem(state, {payload: { newTodolist}}: PayloadAction<{ newTodolist:TodolistType }>) {
+               return state = [newTodolist, ...state]
+            },
+            removeTodolistItem(state, {payload: {todolistId}}: PayloadAction<{ todolistId: string }>) {
+                return state = state.filter((todolist) => todolist.id !== todolistId)
+            },
+            changeTodoTitle(state, {payload: {title, todolistId}}: PayloadAction<{
+                title: string,
+                todolistId: string
+            }>) {
+                return state = state.map(todolist => todolist.id === todolistId ? {...todolist, title} : todolist)
+            },
+            changeTodolistFilter(state, {payload: {filter, todolistId}}: PayloadAction<{
+                todolistId: string,
+                filter: FilterValuesType
+            }>) {
+                return state = state.map(todolist => todolist.id === todolistId ? {...todolist, filter} : todolist)
+            },
+        }
+    })
+export const todolistsReducer = todolistSlice.reducer;
 
-})
-export const selectSliceTasks =(state:RootState)=>state.tasks
+export const { addTodolistItem, removeTodolistItem,changeTodoTitle,changeTodolistFilter} =
+    todolistSlice.actions
 
-export const tasksReducer = tasksSlice.reducer;
-
-
-export const { addTask} =
-    tasksSlice.actions
-
-export default tasksSlice.reducer
